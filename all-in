@@ -1,0 +1,1492 @@
+// 17.10 — ĆWICZENIE 1 — PODSTAWY ARDUINO
+
+// ******** Miganie diody ********
+
+void setup()
+{
+  pinMode(13, OUTPUT);
+}
+
+void loop()
+{
+  digitalWrite(13, HIGH);
+  delay(1000);
+  digitalWrite(13, LOW);
+  delay(1000);
+}
+
+
+// ******** Hello World ********
+
+void setup()
+{
+  Serial.begin(9600);
+}
+
+void loop()
+{
+  Serial.print("Hello World!\n\r");
+  delay(2000);
+}
+
+
+// ******** Hello World i dioda ********
+
+int ledPin = 13;
+
+void setup()
+{
+  pinMode(ledPin, OUTPUT);
+  Serial.begin(9600);
+}
+
+void loop()
+{
+  Serial.println("Hello World!");
+  digitalWrite(ledPin, HIGH);
+  delay(1000);
+  digitalWrite(ledPin, LOW);
+  delay(1000);
+}
+
+
+// ******** Sterowanie diodą przez port szeregowy ********
+
+int ledPin = 13;
+int inByte = 0;
+
+void setup() {
+  pinMode(ledPin, OUTPUT);
+  Serial.begin(9600);
+}
+
+void loop() {
+  while (Serial.available() > 0) {
+    inByte = Serial.read();
+    Serial.println((char)inByte);
+
+    if (inByte == 'a') {
+      digitalWrite(ledPin, HIGH);
+    } else {
+      digitalWrite(ledPin, LOW);
+    }
+    delay(1000);
+  }
+}
+
+
+// ******** Trzy diody - wersja z zajęć ********
+
+int ledPinR = 13;
+int ledPinG = 12;
+int ledPinY = 11;
+int inByte = 0;
+
+void setup() {
+  pinMode(ledPinR, OUTPUT);
+  pinMode(ledPinG, OUTPUT);
+  pinMode(ledPinY, OUTPUT);
+  Serial.begin(9600);
+}
+
+void loop() {
+  while (Serial.available() > 0) {
+    inByte = Serial.read();
+    Serial.println((char)inByte);
+
+    if (inByte == '1') {
+      digitalWrite(ledPinR, HIGH);
+    } else {
+      digitalWrite(ledPinR, LOW);
+    }
+
+    if (inByte == '2') {
+      digitalWrite(ledPinG, HIGH);
+    } else {
+      digitalWrite(ledPinG, LOW);
+    }
+
+    if (inByte == '3') {
+      digitalWrite(ledPinY, HIGH);
+    } else {
+      digitalWrite(ledPinY, LOW);
+    }
+
+    delay(1000);
+
+    if (inByte == 'k') {
+      digitalWrite(ledPinR, HIGH);
+      digitalWrite(ledPinG, HIGH);
+      digitalWrite(ledPinY, HIGH);
+    } else {
+      digitalWrite(ledPinY, LOW);
+    }
+
+    delay(1000);
+  }
+
+  if (inByte == 's') {
+    digitalWrite(ledPinR, LOW);
+    digitalWrite(ledPinG, LOW);
+    digitalWrite(ledPinY, LOW);
+  } else {
+    digitalWrite(ledPinY, HIGH);
+  }
+}
+
+
+// ******** Trzy diody - według instrukcji ********
+
+int ledPinR = 13;
+int ledPinG = 12;
+int ledPinY = 11;
+int inByte = 0;
+
+void setup() {
+  pinMode(ledPinR, OUTPUT);
+  pinMode(ledPinG, OUTPUT);
+  pinMode(ledPinY, OUTPUT);
+  Serial.begin(9600);
+}
+
+void loop() {
+  if (Serial.available() > 0) {
+    inByte = Serial.read();
+
+    if (inByte == '1') digitalWrite(ledPinR, HIGH);
+    if (inByte == '2') digitalWrite(ledPinG, HIGH);
+    if (inByte == '3') digitalWrite(ledPinY, HIGH);
+
+    if (inByte == 'k') {
+      digitalWrite(ledPinR, LOW);
+      digitalWrite(ledPinG, LOW);
+      digitalWrite(ledPinY, LOW);
+    }
+
+    if (inByte == 's') {
+      digitalWrite(ledPinR, HIGH);
+      digitalWrite(ledPinG, HIGH);
+      digitalWrite(ledPinY, HIGH);
+    }
+  }
+}
+
+
+// ******** Losowe diody ********
+
+int diody[] = {13, 12, 11};
+
+void setup() {
+  for (int i = 0; i < 3; i++)
+    pinMode(diody[i], OUTPUT);
+
+  randomSeed(analogRead(A0));
+}
+
+void loop() {
+  for (int i = 0; i < 3; i++)
+    digitalWrite(diody[i], LOW);
+
+  digitalWrite(diody[random(0, 3)], HIGH);
+  delay(1000);
+}
+
+
+// ************************************************
+// 17.10 — ĆWICZENIE 2 — WEJŚCIA I WYJŚCIA
+// ************************************************
+
+// ******** Przykład 1 - przycisk i dioda ********
+
+const int LED = 9;
+const int BUTTON = 2;
+boolean lastButton = LOW;
+boolean currentButton = LOW;
+boolean ledOn = false;
+
+void setup()
+{
+  pinMode(LED, OUTPUT);
+  pinMode(BUTTON, INPUT_PULLUP);
+}
+
+boolean debounce(boolean last)
+{
+  boolean current = digitalRead(BUTTON);
+
+  if (last != current)
+  {
+    delay(5);
+    current = digitalRead(BUTTON);
+  }
+
+  return current;
+}
+
+void loop()
+{
+  currentButton = debounce(lastButton);
+
+  if (lastButton == LOW && currentButton == HIGH)
+  {
+    ledOn = !ledOn;
+  }
+
+  lastButton = currentButton;
+  digitalWrite(LED, ledOn);
+}
+
+
+// ******** Przykład 2 - wyłącznik czasowy 4 s ********
+
+const int readPin = 2;
+const int writePin = 9;
+
+void setup()
+{
+  pinMode(readPin, INPUT_PULLUP);
+  pinMode(writePin, OUTPUT);
+}
+
+const int interval = 50;
+const int maxLightMS = 4000;
+int activated = 0;
+
+void loop()
+{
+  boolean active = !digitalRead(readPin);
+
+  if (active)
+    activated += interval;
+  else
+    activated = 0;
+
+  if (active && (activated <= maxLightMS))
+  {
+    digitalWrite(writePin, HIGH);
+  }
+  else
+  {
+    digitalWrite(writePin, LOW);
+  }
+
+  delay(interval);
+}
+
+
+// ******** Przykład 3 - rozjaśnianie LED ********
+
+int led = 11;
+
+void setup()
+{
+  pinMode(led, OUTPUT);
+}
+
+void loop()
+{
+  int value = 0;
+
+  for (value = 0; value < 255; value++)
+  {
+    analogWrite(led, value);
+    delay(10);
+  }
+}
+
+
+// ******** Przykład 4 - rozjaśnianie i wygaszanie ********
+
+int led = 11;
+int poziom = 0;
+int zmiana = 5;
+
+void setup()
+{
+  pinMode(led, OUTPUT);
+}
+
+void loop()
+{
+  analogWrite(led, poziom);
+  poziom = poziom + zmiana;
+
+  if (poziom == 0 || poziom == 255)
+    zmiana = -zmiana;
+
+  delay(30);
+}
+
+
+// ******** Zadanie 1 - jasność z monitora portu ********
+
+int LED = 11;
+
+void setup() {
+  pinMode(LED, OUTPUT);
+  Serial.begin(9600);
+}
+
+void loop() {
+  while (Serial.available() > 0) {
+    int liczba = Serial.parseInt();
+    liczba = constrain(liczba, 0, 255);
+    Serial.println(liczba);
+    analogWrite(LED, liczba);
+  }
+}
+
+
+// ******** Zadanie 2 - potencjometr i PWM ********
+
+int analogValue = 0;
+int ledPin = 11;
+
+void setup() {
+  pinMode(ledPin, OUTPUT);
+  Serial.begin(9600);
+}
+
+void loop() {
+  analogValue = analogRead(A0);
+  analogWrite(ledPin, analogValue / 4);
+
+  float voltage = analogValue * 5.0 / 1023;
+  Serial.println(voltage);
+
+  delay(20);
+}
+
+
+// ******** Przykład 9 - regulacja czasu migania ********
+
+const int ledPin = 13;
+const int sensorPin = 0;
+
+const int minCzas = 100;
+const int maxCzas = 1000;
+
+void setup()
+{
+  pinMode(ledPin, OUTPUT);
+  Serial.begin(9600);
+}
+
+void loop()
+{
+  int czas = analogRead(sensorPin);
+
+  czas = map(czas, 0, 1023, minCzas, maxCzas);
+
+  Serial.println(czas);
+
+  digitalWrite(ledPin, HIGH);
+  delay(czas);
+  digitalWrite(ledPin, LOW);
+  delay(czas);
+}
+
+
+// ************************************************
+// 24.10 — ĆWICZENIE 3 — WYŚWIETLACZ LCD
+// ************************************************
+
+// ******** Zadanie 1 - imię i nazwisko ********
+
+#include <LiquidCrystal.h>
+
+LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
+
+void setup() {
+  lcd.begin(16, 2);
+  lcd.setCursor(0, 0);
+  lcd.print("Kacper");
+  lcd.setCursor(0, 1);
+  lcd.print("Kulikowski");
+}
+
+void loop() {
+}
+
+
+// ******** Zadanie 2 - własne znaki gęś ********
+
+#include <LiquidCrystal.h>
+
+LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
+
+byte e[8] = {
+  B00000,
+  B11111,
+  B10001,
+  B11111,
+  B10000,
+  B01111,
+  B00100,
+  B00011
+};
+
+byte s[8] = {
+  B00000,
+  B00010,
+  B00100,
+  B01110,
+  B10000,
+  B01110,
+  B00001,
+  B11110
+};
+
+void setup() {
+  lcd.createChar(0, e);
+  lcd.createChar(1, s);
+  lcd.begin(16, 2);
+
+  lcd.setCursor(0, 1);
+  lcd.print("g");
+  lcd.write(byte(0));
+  lcd.write(byte(1));
+}
+
+void loop() {
+}
+
+
+// ******** Zadanie 3 - liczba + 1 ********
+
+#include <LiquidCrystal.h>
+
+LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
+
+int liczba;
+
+void setup() {
+  lcd.begin(16, 2);
+  Serial.begin(9600);
+  lcd.print("Podaj liczbe");
+}
+
+void loop() {
+  if (Serial.available() > 0) {
+    liczba = Serial.parseInt();
+
+    lcd.clear();
+    lcd.print(liczba + 1);
+  }
+}
+
+
+// ******** Zadanie 4 - suma dwóch liczb ********
+
+#include <LiquidCrystal.h>
+
+LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
+
+int a, b;
+
+void setup() {
+  lcd.begin(16, 2);
+  Serial.begin(9600);
+  lcd.print("Podaj 2 liczby");
+}
+
+void loop() {
+  if (Serial.available() > 0) {
+    a = Serial.parseInt();
+    b = Serial.parseInt();
+
+    lcd.clear();
+    lcd.print(a + b);
+  }
+}
+
+
+// ******** Zadanie 5 - przesuwanie napisu ********
+
+#include <LiquidCrystal.h>
+
+LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
+
+void setup() {
+  lcd.begin(16, 2);
+}
+
+void loop() {
+  for (int i = 0; i <= 10; i++) {
+    lcd.clear();
+    lcd.setCursor(i, 0);
+    lcd.print("Kulikowski");
+    delay(300);
+  }
+
+  for (int i = 9; i >= 0; i--) {
+    lcd.clear();
+    lcd.setCursor(i, 0);
+    lcd.print("Onufrowicz");
+    delay(300);
+  }
+}
+
+
+// ******** Zadanie 6 - znaki ASCII ********
+
+#include <LiquidCrystal.h>
+
+LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
+
+int kod;
+
+void setup() {
+  lcd.begin(16, 2);
+  Serial.begin(9600);
+
+  for (int i = 32; i <= 255; i++) {
+    lcd.clear();
+    lcd.write((byte)i);
+    delay(500);
+  }
+
+  lcd.clear();
+  lcd.print("Podaj kod");
+}
+
+void loop() {
+  if (Serial.available() > 0) {
+    kod = Serial.parseInt();
+
+    if (kod >= 32 && kod <= 255) {
+      lcd.clear();
+      lcd.write((byte)kod);
+    }
+  }
+}
+
+
+// ******** Zadanie 7 - pasek postępu ********
+
+#include <LiquidCrystal.h>
+
+LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
+
+int wartosc;
+int pasek;
+
+void setup() {
+  lcd.begin(16, 2);
+}
+
+void loop() {
+  wartosc = analogRead(A8);
+  pasek = map(wartosc, 0, 1023, 0, 16);
+
+  lcd.clear();
+
+  for (int i = 0; i < pasek; i++) {
+    lcd.write(byte(255));
+  }
+
+  delay(200);
+}
+
+
+// ************************************************
+// 24.10 — ĆWICZENIE 4 — KLAWISZE LCD I KLAWIATURA
+// ************************************************
+
+// ******** Odczyt przycisków nakładki LCD ********
+
+#include <LiquidCrystal.h>
+
+LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
+
+void setup() {
+  lcd.begin(16, 2);
+}
+
+void loop() {
+  int adc_key_in = analogRead(A0);
+
+  lcd.setCursor(0, 0);
+
+  if (adc_key_in < 50) lcd.print("RIGHT ");
+  else if (adc_key_in < 195) lcd.print("UP    ");
+  else if (adc_key_in < 380) lcd.print("DOWN  ");
+  else if (adc_key_in < 555) lcd.print("LEFT  ");
+  else if (adc_key_in < 790) lcd.print("SELECT");
+  else lcd.print("NONE  ");
+
+  delay(100);
+}
+
+
+// ******** Zadanie 1 - przesuwanie tekstu ********
+
+#include <LiquidCrystal.h>
+
+LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
+
+String tekst = "Ala ma kota. Kot lubi mleko";
+int pozycja = 0;
+
+void setup() {
+  lcd.begin(16, 2);
+}
+
+void loop() {
+  int przycisk = analogRead(A0);
+
+  if (przycisk > 400 && przycisk < 600) {
+    if (pozycja > 0) pozycja--;
+    delay(250);
+  }
+
+  if (przycisk < 50) {
+    if (pozycja < tekst.length() - 16) pozycja++;
+    delay(250);
+  }
+
+  lcd.setCursor(0, 0);
+  lcd.print(tekst.substring(pozycja, pozycja + 16));
+}
+
+
+// ******** Zadanie 2 - losowanie trzech kostek ********
+
+#include <LiquidCrystal.h>
+
+LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
+
+void losuj() {
+  int a = random(1, 7);
+  int b = random(1, 7);
+  int c = random(1, 7);
+
+  lcd.clear();
+  lcd.print(a);
+  lcd.print(" ");
+  lcd.print(b);
+  lcd.print(" ");
+  lcd.print(c);
+
+  Serial.print(a);
+  Serial.print(" ");
+  Serial.print(b);
+  Serial.print(" ");
+  Serial.println(c);
+}
+
+void setup() {
+  lcd.begin(16, 2);
+  Serial.begin(9600);
+  randomSeed(analogRead(A1));
+  losuj();
+}
+
+void loop() {
+  int przycisk = analogRead(A0);
+
+  if (przycisk > 600 && przycisk < 850) {
+    losuj();
+    delay(300);
+  }
+}
+
+
+// ******** Zadanie 3 - edycja MIN i MAX ********
+
+#include <LiquidCrystal.h>
+
+LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
+
+int minimum = 0, maksimum = 10;
+int pozycja = 0;
+
+void setup() {
+  lcd.begin(16, 2);
+  Serial.begin(9600);
+}
+
+void loop() {
+  int przycisk = analogRead(A0);
+
+  if (przycisk >= 50 && przycisk < 195)
+    pozycja = 0;
+
+  if (przycisk >= 195 && przycisk < 380)
+    pozycja = 1;
+
+  if (przycisk < 50) {
+    if (pozycja == 0) maksimum++;
+    else minimum++;
+  }
+
+  if (przycisk >= 380 && przycisk < 555) {
+    if (pozycja == 0) maksimum--;
+    else minimum--;
+  }
+
+  if (przycisk >= 555 && przycisk < 790) {
+    Serial.print("MAX = ");
+    Serial.println(maksimum);
+    Serial.print("MIN = ");
+    Serial.println(minimum);
+  }
+
+  lcd.clear();
+
+  lcd.setCursor(0, 0);
+  lcd.print(pozycja == 0 ? ">MAX=" : " MAX=");
+  lcd.print(maksimum);
+
+  lcd.setCursor(0, 1);
+  lcd.print(pozycja == 1 ? ">MIN=" : " MIN=");
+  lcd.print(minimum);
+
+  delay(250);
+}
+
+
+// ******** Klawiatura matrycowa - odczyt klawiszy ********
+
+#include <Keypad.h>
+
+const byte ROWS = 4;
+const byte COLS = 4;
+
+char keys[ROWS][COLS] = {
+  {'1','2','3','A'},
+  {'4','5','6','B'},
+  {'7','8','9','C'},
+  {'*','0','#','D'}
+};
+
+byte rowPins[ROWS] = {14, 15, 16, 17};
+byte colPins[COLS] = {18, 19, 20, 21};
+
+Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS);
+
+#define ledpin 13
+
+void setup()
+{
+  Serial.begin(9600);
+  pinMode(ledpin, OUTPUT);
+  digitalWrite(ledpin, HIGH);
+}
+
+void loop()
+{
+  char key = keypad.getKey();
+
+  if (key != NO_KEY)
+  {
+    switch (key)
+    {
+      case '*':
+        digitalWrite(ledpin, LOW);
+        break;
+
+      case '#':
+        digitalWrite(ledpin, HIGH);
+        break;
+
+      default:
+        Serial.println(key);
+    }
+
+    delay(100);
+  }
+}
+
+
+// ******** Klawiatura matrycowa - znaki na LCD ********
+
+#include <LiquidCrystal.h>
+#include <Keypad.h>
+
+const byte ROWS = 4;
+const byte COLS = 4;
+
+char keys[ROWS][COLS] = {
+  {'1','2','3','A'},
+  {'4','5','6','B'},
+  {'7','8','9','C'},
+  {'*','0','#','D'}
+};
+
+byte rowPins[ROWS] = {14, 15, 16, 17};
+byte colPins[COLS] = {18, 19, 20, 21};
+
+Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS);
+
+LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
+
+void setup()
+{
+  lcd.begin(16, 2);
+  lcd.setCursor(0, 0);
+}
+
+void loop()
+{
+  char key;
+
+  if (key = keypad.getKey())
+    lcd.write(key);
+
+  delay(100);
+}
+
+
+// ******** Zamek cyfrowy - sejf ********
+
+#include <Keypad.h>
+
+char keys[4][4] = {
+  {'1','2','3','A'},
+  {'4','5','6','B'},
+  {'7','8','9','C'},
+  {'*','0','#','D'}
+};
+
+byte rowPins[4] = {14, 15, 16, 17};
+byte colPins[4] = {18, 19, 20, 21};
+
+Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, 4, 4);
+
+String kod = "";
+String wpisany = "";
+
+void setup() {
+  Serial.begin(9600);
+
+  pinMode(40, OUTPUT);
+  pinMode(41, OUTPUT);
+
+  digitalWrite(40, HIGH);
+  digitalWrite(41, LOW);
+
+  while (kod.length() != 4) {
+    if (Serial.available()) {
+      kod = Serial.readStringUntil('\n');
+      kod.trim();
+
+      if (kod.length() != 4) {
+        kod = "";
+      }
+    }
+  }
+}
+
+void loop() {
+  char key = keypad.getKey();
+
+  if (key >= '0' && key <= '9') {
+    if (wpisany.length() < 4) {
+      wpisany += key;
+    }
+  }
+
+  if (key == '#') {
+    if (wpisany == kod) {
+      digitalWrite(40, LOW);
+      digitalWrite(41, HIGH);
+    }
+
+    wpisany = "";
+  }
+
+  if (key == '*') {
+    digitalWrite(40, HIGH);
+    digitalWrite(41, LOW);
+    wpisany = "";
+  }
+}
+
+
+// ******** Kalkulator czterodziałaniowy ********
+
+// A = dodawanie, B = odejmowanie
+// C = mnożenie, D = dzielenie
+// # = wynik, * = reset
+
+#include <Keypad.h>
+#include <LiquidCrystal.h>
+
+LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
+
+char keys[4][4] = {
+  {'1','2','3','A'},
+  {'4','5','6','B'},
+  {'7','8','9','C'},
+  {'*','0','#','D'}
+};
+
+byte rowPins[4] = {14, 15, 16, 17};
+byte colPins[4] = {18, 19, 20, 21};
+
+Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, 4, 4);
+
+long a = 0, b = 0;
+char operacja = 0;
+
+void setup() {
+  lcd.begin(16, 2);
+}
+
+void loop() {
+  char key = keypad.getKey();
+
+  if (!key) return;
+
+  if (key >= '0' && key <= '9') {
+    if (operacja == 0) a = a * 10 + key - '0';
+    else b = b * 10 + key - '0';
+
+    lcd.print(key);
+  }
+
+  if (key >= 'A' && key <= 'D' && operacja == 0) {
+    operacja = key;
+
+    lcd.print(key == 'A' ? '+' : key == 'B' ? '-' :
+              key == 'C' ? '*' : '/');
+  }
+
+  if (key == '#' && operacja != 0) {
+    lcd.setCursor(0, 1);
+
+    if (operacja == 'A') lcd.print(a + b);
+    if (operacja == 'B') lcd.print(a - b);
+    if (operacja == 'C') lcd.print(a * b);
+
+    if (operacja == 'D') {
+      if (b != 0) lcd.print((float)a / b);
+      else lcd.print("Blad");
+    }
+  }
+
+  if (key == '*') {
+    a = b = 0;
+    operacja = 0;
+    lcd.clear();
+  }
+}
+
+
+// ************************************************
+// 07.11 — ĆWICZENIE 5 — CZUJNIKI
+// ************************************************
+
+// ******** Temperatura - monitor portu szeregowego ********
+
+float celsius = 0;
+float fahrenheit = 0;
+
+void setup()
+{
+  Serial.begin(9600);
+}
+
+void findTemps()
+{
+  float voltage = 0;
+  float sensor = 0;
+
+  sensor = analogRead(0);
+  voltage = (sensor * 5000) / 1024;
+  voltage = voltage - 500;
+  celsius = voltage / 10;
+  fahrenheit = (1.8 * celsius) + 32;
+}
+
+void displayTemps()
+{
+  Serial.print(" Temperatura wynosi ");
+  Serial.print(celsius, 0);
+  Serial.print(" st. C / ");
+  Serial.print(fahrenheit, 0);
+  Serial.println(" st. F");
+}
+
+void loop()
+{
+  findTemps();
+  displayTemps();
+  delay(1000);
+}
+
+
+// ******** Temperatura - wyświetlacz LCD ********
+
+#include <LiquidCrystal.h>
+
+LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
+
+float celsius = 0;
+float fahrenheit = 0;
+
+void setup()
+{
+  lcd.begin(16, 2);
+}
+
+void findTemps()
+{
+  float voltage = 0;
+  float sensor = 0;
+
+  sensor = analogRead(A8);
+  voltage = (sensor * 5000) / 1024;
+  voltage = voltage - 500;
+  celsius = voltage / 10;
+  fahrenheit = (1.8 * celsius) + 32;
+}
+
+void displayTemps()
+{
+  lcd.clear();
+
+  lcd.setCursor(0, 0);
+  lcd.print(celsius, 0);
+  lcd.print(" stopni C.");
+
+  lcd.setCursor(0, 1);
+  lcd.print(fahrenheit, 0);
+  lcd.print(" stopni F.");
+}
+
+void loop()
+{
+  findTemps();
+  displayTemps();
+  delay(1000);
+}
+
+
+// ******** Odległość - HC-SR04 ********
+
+#include <LiquidCrystal.h>
+
+int TX = 14;
+int RX = 15;
+int CM;
+long TIME;
+
+LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
+
+void setup()
+{
+  lcd.begin(16, 2);
+
+  pinMode(TX, OUTPUT);
+  pinMode(RX, INPUT);
+}
+
+void loop()
+{
+  pomiar_odleglosci();
+
+  lcd.clear();
+
+  lcd.setCursor(0, 0);
+  lcd.print(TIME);
+
+  lcd.setCursor(0, 1);
+  lcd.print(TIME / 58);
+
+  delay(1000);
+}
+
+void pomiar_odleglosci()
+{
+  digitalWrite(TX, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(TX, LOW);
+
+  TIME = pulseIn(RX, HIGH);
+}
+
+
+// ******** Odległość - biblioteka Ultrasonic ********
+
+#include <Ultrasonic.h>
+#include <LiquidCrystal.h>
+
+LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
+Ultrasonic ultrasonic(14, 15);
+
+void setup() {
+  lcd.begin(16, 2);
+  lcd.print("testing...");
+}
+
+void loop()
+{
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print(ultrasonic.read());
+  lcd.print("cm");
+
+  delay(200);
+}
+
+
+// ******** Diody na odległość - wersja z zajęć ********
+
+#include <LiquidCrystal.h>
+
+int TX = 14;
+int RX = 15;
+int CM;
+long TIME;
+
+int zielona = 32;
+int zolta = 31;
+int czerwona = 30;
+
+LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
+
+void setup()
+{
+  lcd.begin(16, 2);
+
+  pinMode(TX, OUTPUT);
+  pinMode(RX, INPUT);
+
+  pinMode(zielona, OUTPUT);
+  pinMode(zolta, OUTPUT);
+  pinMode(czerwona, OUTPUT);
+}
+
+void loop()
+{
+  pomiar_odleglosci();
+
+  lcd.clear();
+
+  lcd.setCursor(0, 0);
+  lcd.print(TIME);
+
+  lcd.setCursor(0, 1);
+  CM = TIME / 58;
+  lcd.print(CM);
+
+  digitalWrite(zielona, LOW);
+  digitalWrite(zolta, LOW);
+  digitalWrite(czerwona, LOW);
+
+  if (TIME > 0)
+  {
+    if (CM > 50)
+    {
+      digitalWrite(zielona, HIGH);
+    }
+    else if (CM >= 25)
+    {
+      digitalWrite(zolta, HIGH);
+    }
+    else
+    {
+      digitalWrite(czerwona, HIGH);
+    }
+  }
+
+  delay(1000);
+}
+
+void pomiar_odleglosci()
+{
+  digitalWrite(TX, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(TX, LOW);
+
+  TIME = pulseIn(RX, HIGH);
+}
+
+
+// ******** Czujnik ruchu PIR ********
+
+int led = 30;
+int sensor = 42;
+int state = LOW;
+int val = 0;
+
+void setup() {
+  pinMode(led, OUTPUT);
+  pinMode(sensor, INPUT);
+  Serial.begin(9600);
+}
+
+void loop() {
+  val = digitalRead(sensor);
+
+  if (val == HIGH) {
+    digitalWrite(led, HIGH);
+    delay(10);
+
+    if (state == LOW) {
+      Serial.println("Motion detected!");
+      state = HIGH;
+    }
+  }
+  else {
+    digitalWrite(led, LOW);
+
+    if (state == HIGH) {
+      Serial.println("Motion stopped!");
+      state = LOW;
+    }
+  }
+}
+
+
+// ******** Pomiar czasu impulsu PIR ********
+
+int sensor = 42;
+int led = 30;
+unsigned long start = 0;
+int stan = LOW;
+
+void setup() {
+  pinMode(sensor, INPUT);
+  pinMode(led, OUTPUT);
+  Serial.begin(9600);
+}
+
+void loop() {
+  int val = digitalRead(sensor);
+
+  digitalWrite(led, val);
+
+  if (val == HIGH && stan == LOW)
+    start = millis();
+
+  if (val == LOW && stan == HIGH) {
+    Serial.print("Czas impulsu [ms]: ");
+    Serial.println(millis() - start);
+  }
+
+  stan = val;
+}
+
+
+// ************************************************
+// 07.11 — ĆWICZENIE 6 — PRZERWANIA ARDUINO
+// ************************************************
+
+// ******** Przykład 1 - zmiana stanu diody ********
+
+int pin = 13;
+volatile int state = LOW;
+
+void setup()
+{
+  pinMode(pin, OUTPUT);
+  pinMode(2, INPUT_PULLUP);
+
+  attachInterrupt(0, blink, CHANGE);
+}
+
+void loop()
+{
+  digitalWrite(pin, state);
+}
+
+void blink()
+{
+  state = !state;
+}
+
+
+// ******** Przykład 2 - włączanie migania ********
+
+#define WY 13
+
+volatile int stan = LOW;
+int czas = 100;
+
+void setup()
+{
+  pinMode(WY, OUTPUT);
+  pinMode(2, INPUT_PULLUP);
+
+  attachInterrupt(0, diodaOnOff, RISING);
+}
+
+void loop()
+{
+  if (stan)
+  {
+    digitalWrite(WY, HIGH);
+    delay(czas);
+    digitalWrite(WY, LOW);
+    delay(czas);
+  }
+}
+
+void diodaOnOff()
+{
+  static unsigned long lastMillis = 0;
+  unsigned long newMillis = millis();
+
+  if (newMillis - lastMillis < 50)
+  {
+  }
+  else
+  {
+    stan = !stan;
+    lastMillis = newMillis;
+  }
+}
+
+
+// ******** Przykład 3 - dwa przyciski i czas ********
+
+#define LED 13
+
+void setup()
+{
+  Serial.begin(9600);
+
+  pinMode(LED, OUTPUT);
+  pinMode(2, INPUT_PULLUP);
+  pinMode(3, INPUT_PULLUP);
+
+  attachInterrupt(0, displayMicros, RISING);
+  attachInterrupt(1, displayMillis, RISING);
+}
+
+void displayMicros()
+{
+  static unsigned long lastMillis = 0;
+  unsigned long newMillis = millis();
+
+  if (newMillis - lastMillis < 50) {
+  } else {
+    Serial.write("micros() = ");
+    Serial.println(micros());
+    lastMillis = newMillis;
+  }
+}
+
+void displayMillis()
+{
+  static unsigned long lastMillis = 0;
+  unsigned long newMillis = millis();
+
+  if (newMillis - lastMillis < 50) {
+  } else {
+    Serial.write("millis() = ");
+    Serial.println(millis());
+    lastMillis = newMillis;
+  }
+}
+
+void loop()
+{
+  digitalWrite(LED, HIGH);
+  delay(500);
+  digitalWrite(LED, LOW);
+  delay(500);
+}
+
+
+// ******** Przykład 4 - TimerOne ********
+
+#include <TimerOne.h>
+
+void Mruganie(void);
+
+void setup()
+{
+  pinMode(13, OUTPUT);
+
+  Timer1.initialize(1000000);
+  Timer1.attachInterrupt(Mruganie);
+}
+
+void loop()
+{
+}
+
+void Mruganie()
+{
+  digitalWrite(13, !digitalRead(13));
+}
+
+
+// ******** Przykład 5 - licznik impulsów ********
+
+volatile word steps;
+
+void setup()
+{
+  Serial.begin(9600);
+
+  pinMode(2, INPUT_PULLUP);
+
+  attachInterrupt(digitalPinToInterrupt(2), onStep, RISING);
+}
+
+void loop()
+{
+  Serial.println(steps);
+  delay(5000);
+}
+
+void onStep()
+{
+  static unsigned long lastTime;
+  unsigned long timeNow = millis();
+
+  if (timeNow - lastTime < 50)
+    return;
+
+  steps++;
+  lastTime = timeNow;
+}
+
+
+// ******** PIR - przerwanie i TimerOne ********
+
+#include <TimerOne.h>
+
+const int pirSensorPin = 2;
+const int ledPin = 13;
+const unsigned long timeoutDelay = 5000;
+
+volatile bool motionDetected = false;
+volatile unsigned long lastMotionTime = 0;
+
+void setup() {
+  pinMode(ledPin, OUTPUT);
+  pinMode(pirSensorPin, INPUT);
+
+  attachInterrupt(digitalPinToInterrupt(pirSensorPin), pirISR, RISING);
+
+  Timer1.initialize(100000);
+  Timer1.attachInterrupt(turnOffLED);
+}
+
+void loop() {
+  if (motionDetected) {
+    noInterrupts();
+    motionDetected = false;
+    lastMotionTime = millis();
+    interrupts();
+
+    digitalWrite(ledPin, HIGH);
+  }
+}
+
+void pirISR() {
+  motionDetected = true;
+}
+
+void turnOffLED() {
+  if (digitalRead(pirSensorPin) == LOW &&
+      millis() - lastMotionTime >= timeoutDelay) {
+    digitalWrite(ledPin, LOW);
+  }
+}
